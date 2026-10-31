@@ -135,6 +135,90 @@ classDiagram
     Quiz "*" --> "*" Question : questions
 ```
 
+## Modelo relacional (JPA)
+
+| Relación | Clases | Lado propietario / clave foránea |
+|---|---|---|
+| `@OneToOne` | `QuestionRecord` ↔ `QuestionMetadataRecord` | `question_metadata.question_id` (obligatoria y **única**: una pregunta no puede tener dos registros de metadatos) |
+| `@OneToMany` / `@ManyToOne` | `MultipleChoiceQuestionRecord` → `AnswerOptionRecord` | `answer_options.question_id` (obligatoria; `cascade = ALL` y `orphanRemoval`: las opciones se eliminan con la pregunta) |
+| `@ManyToOne` | `QuestionRecord` → `UserRecord` (autor) | `questions.author_id` (obligatoria) |
+| `@ManyToOne` | `QuestionRecord` → `TopicRecord` | `questions.topic_id` (opcional hasta clasificar) |
+| `@ManyToMany` | `QuestionRecord` ↔ `CompetencyRecord` | tabla intermedia `question_competency` |
+| `@ManyToMany` | `QuizRecord` → `QuestionRecord` | tabla intermedia `quiz_question` (con `position`) |
+| Herencia `JOINED` | `QuestionRecord` ← `MultipleChoiceQuestionRecord`, `TrueFalseQuestionRecord` | PK de cada subtabla = FK a `questions.id` |
+
+```mermaid
+erDiagram
+    users ||--o{ questions : "author_id"
+    topics |o--o{ questions : "topic_id"
+    questions ||--o| question_metadata : "question_id (unique)"
+    questions ||--o| multiple_choice_questions : "question_id (PK/FK)"
+    questions ||--o| true_false_questions : "question_id (PK/FK)"
+    multiple_choice_questions ||--o{ answer_options : "question_id"
+    questions ||--o{ question_competency : "question_id"
+    competencies ||--o{ question_competency : "competency_id"
+    quizzes ||--o{ quiz_question : "quiz_id"
+    questions ||--o{ quiz_question : "question_id"
+
+    users {
+        BIGINT id PK
+        VARCHAR full_name
+        VARCHAR email UK
+        VARCHAR role
+    }
+    topics {
+        BIGINT id PK
+        VARCHAR name UK
+    }
+    competencies {
+        BIGINT id PK
+        VARCHAR code UK
+        VARCHAR name
+    }
+    questions {
+        BIGINT id PK
+        VARCHAR statement
+        VARCHAR status
+        BIGINT author_id FK
+        BIGINT topic_id FK
+    }
+    question_metadata {
+        BIGINT id PK
+        BIGINT question_id FK
+        DATE last_review_date
+        VARCHAR cognitive_level
+        INT estimated_time_minutes
+        VARCHAR editorial_notes
+    }
+    multiple_choice_questions {
+        BIGINT question_id PK
+    }
+    true_false_questions {
+        BIGINT question_id PK
+        BOOLEAN correct_answer
+    }
+    answer_options {
+        BIGINT id PK
+        VARCHAR text
+        BOOLEAN correct
+        INT position
+        BIGINT question_id FK
+    }
+    question_competency {
+        BIGINT question_id FK
+        BIGINT competency_id FK
+    }
+    quizzes {
+        BIGINT id PK
+        VARCHAR title
+    }
+    quiz_question {
+        BIGINT quiz_id FK
+        BIGINT question_id FK
+        INT position
+    }
+```
+
 ## Ejecución
 
 ```bash

@@ -11,6 +11,8 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -29,9 +31,12 @@ import java.util.Set;
  *     <li>{@code @ManyToMany} with {@link CompetencyRecord}: join table {@code question_competency}.</li>
  *     <li>{@code @OneToOne} with {@link QuestionMetadataRecord}: inverse side, the metadata owns the key.</li>
  * </ul>
+ * The question types use the {@code JOINED} inheritance strategy: this table keeps the common columns
+ * and every subtype has its own table whose primary key is also a foreign key to {@code questions}.
  */
 @Entity
 @Table(name = "questions")
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class QuestionRecord {
 
     @Id
