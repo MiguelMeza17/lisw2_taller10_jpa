@@ -219,6 +219,40 @@ erDiagram
     }
 ```
 
+## API REST
+
+Los controladores de `api` solo reciben la solicitud, la convierten en una llamada a un caso de uso de `application` y devuelven DTOs (nunca objetos de dominio ni Records JPA).
+
+| Método | Ruta | Caso de uso |
+|---|---|---|
+| `POST` | `/api/users` | Registrar usuario |
+| `GET` | `/api/users/{id}` | Consultar usuario |
+| `POST` | `/api/topics` | Crear tema |
+| `POST` | `/api/competencies` | Crear competencia |
+| `POST` | `/api/questions` | Crear pregunta (enunciado, autor, tipo, opciones, clasificación y metadatos opcionales) |
+| `GET` | `/api/questions/{id}` | Consultar pregunta |
+| `GET` | `/api/questions?authorId=&status=&topicId=&competencyId=` | Buscar preguntas por criterio |
+| `PUT` | `/api/questions/{id}/classification` | Clasificar (tema y competencias) |
+| `POST` | `/api/questions/{id}/submit` | Enviar a revisión (DRAFT → PENDING_REVIEW) |
+| `POST` | `/api/questions/{id}/start-review` · `/approve` · `/reject` · `/publish` · `/archive` | Resto del ciclo de vida |
+| `POST` | `/api/quizzes` | Crear cuestionario (solo preguntas publicadas) |
+| `GET` | `/api/quizzes/{id}` | Consultar cuestionario |
+
+Errores (`ProblemDetail`): `400` solicitud mal formada, `404` recurso inexistente, `409` violación de restricción (correo o código duplicado) y `422` regla de negocio incumplida.
+
+```bash
+curl -X POST localhost:8080/api/users -H "Content-Type: application/json" \
+  -d '{"fullName":"Ana Autora","email":"ana@unicauca.edu.co","role":"AUTHOR"}'
+curl -X POST localhost:8080/api/topics -H "Content-Type: application/json" -d '{"name":"Arquitectura de software"}'
+curl -X POST localhost:8080/api/competencies -H "Content-Type: application/json" -d '{"code":"DESIGN","name":"Diseño de soluciones"}'
+curl -X POST localhost:8080/api/questions -H "Content-Type: application/json" -d '{
+  "statement":"¿Qué patrón desacopla la persistencia?","authorId":1,"type":"MULTIPLE_CHOICE",
+  "topicId":1,"competencyIds":[1],
+  "options":[{"text":"Repository","correct":true},{"text":"Singleton","correct":false},
+             {"text":"Observer","correct":false},{"text":"Builder","correct":false},{"text":"Prototype","correct":false}]}'
+curl -X POST localhost:8080/api/questions/1/submit
+```
+
 ## Ejecución
 
 ```bash
