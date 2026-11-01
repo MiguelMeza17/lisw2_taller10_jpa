@@ -232,3 +232,11 @@ Consola H2: <http://localhost:8080/h2-console> (JDBC URL `jdbc:h2:mem:questionba
 ```bash
 mvn test
 ```
+
+| Prueba | Qué demuestra |
+|---|---|
+| `QuestionTest` | Reglas del dominio puro (ciclo de vida, 4 distractores + 1 correcta), sin Spring ni BD |
+| `QuestionServiceTest`, `QuizServiceTest` | Casos de uso con repositorios en memoria (`support/InMemoryRepositories`) |
+| `QuestionRepositoryContract` | Comportamiento que debe cumplir cualquier `QuestionRepository`. Se escribe solo contra el dominio y se ejecuta con la implementación en memoria (`InMemoryQuestionRepositoryContractTest`) y con JPA + H2 (`JpaQuestionRepositoryContractTest`) |
+| `JpaPersistenceIntegrationTest` | Guardar y recuperar, relaciones conservadas (revisando las tablas con SQL nativo), herencia `JOINED`, y FK / `UNIQUE` que rechazan filas inválidas |
+| `QuizLifecycleIntegrationTest` | Con la aplicación completa: cada transición queda confirmada en BD y las preguntas no publicadas no entran en cuestionarios (sin dejar filas) |
